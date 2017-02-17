@@ -7,7 +7,7 @@
 #include <Encoder.h>
 #include <Button.h>
 #include <SevenSegmentTM1637.h>
-#include "SevenSegmentExtended.h"
+#include <SevenSegmentExtended.h>
 
 #define LED_PIN 13
 #define BUZZER_PIN 12
@@ -44,10 +44,6 @@ void setup()
 
   Serial.begin(9600);
   Serial.println("Basic Encoder Test:");
-}
-
-void toggleBuzzer() {
-  buzz = !buzz;
 }
 
 void beep() {
@@ -94,7 +90,6 @@ void loop()
     Serial.println(newPosition);
     // display.print(newPosition);
     display.printTime(newPosition, 0, true);
-    blink();
   }
 
   if (button1.pressed()) {
