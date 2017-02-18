@@ -56,7 +56,6 @@ void beep() {
 }
 
 void togglePrint() {
-  beep();
   printing = !printing;
 }
 
@@ -105,9 +104,12 @@ static int16_t last, value;
   }
 
   ClickEncoder::Button b = encoder.getButton();
-  if (b == ClickEncoder::Pressed) {
+  if (b == ClickEncoder::Released) {
     beep();
+    togglePrint();
   }
+
+  print();
   /*
   if (b != ClickEncoder::Open) {
     Serial.print("Button: ");
