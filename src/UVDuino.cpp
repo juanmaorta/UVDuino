@@ -1,15 +1,10 @@
-/*
- * Blink
- * Turns on an LED on for one second,
- * then off for one second, repeatedly.
- */
-
 #include <ClickEncoder.h>
 #include <Button.h>
 #include <SevenSegmentTM1637.h>
 #include <SevenSegmentExtended.h>
+#include <Blinker.h>
 
-#define LED_PIN 13
+#define RELAY_PIN 13
 #define BUZZER_PIN 12
 
 #define ENCODER_PINA     5
@@ -28,28 +23,19 @@
 #define INVERT true
 #define DEBOUNCE_MS 50
 
+#define BEEPER_FLASHES 2
+
 // initialize TM1637 Display objects
 SevenSegmentExtended display(PIN_DISPLAY_CLK, PIN_DISPLAY_DIO);
 Button PrintBtn(PRINT_BTN, PULLUP, INVERT, DEBOUNCE_MS);
 ClickEncoder encoder = ClickEncoder(ENCODER_PINA,ENCODER_PINB,ENCODER_BTN,ENCODER_STEPS_PER_NOTCH);
 
+Blinker beeper = Blinker(BUZZER_PIN, 100);
+
 // @TODO State
 bool printing = false;
 volatile int lastTime = 0;
 volatile int lastRead = 0;
-
-void beep() {
-  digitalWrite(BUZZER_PIN, HIGH);
-  delay(10);
-  digitalWrite(BUZZER_PIN, LOW);
-  display.blink();
-}
-
-void blink() {
-  digitalWrite(LED_PIN, HIGH);
-  delay(10);
-  digitalWrite(LED_PIN, LOW);
-}
 
 void togglePrint() {
   printing = !printing;
@@ -57,11 +43,11 @@ void togglePrint() {
 
 void print() {
   if (printing) {
-    digitalWrite(LED_PIN, HIGH);
+    digitalWrite(RELAY_PIN, HIGH);
     return;
   }
 
-  digitalWrite(LED_PIN, LOW);
+  digitalWrite(RELAY_PIN, LOW);
 }
 
 void displayTime(int time, int lastValue) {
@@ -81,19 +67,23 @@ void displayTime(int time, int lastValue) {
 void resetTime() {
   lastTime = 0;
   lastRead = 0;
+  beeper.beep();
   display.printTime(0, 0, true);
+  display.blink();
 }
 
 void setup()
 {
   // initialize LED digital pin as an output.
-  pinMode(LED_PIN, OUTPUT);
-  pinMode(BUZZER_PIN, OUTPUT);
+
+  pinMode(RELAY_PIN, OUTPUT);
+  // pinMode(BUZZER_PIN, OUTPUT);
 
   display.begin();            // initializes the display
   display.setBacklight(50);  // set the brightness to 100 %
   display.print("HOLA");      // display INIT on the display
   delay(1000);                // wait 1000 ms
+  beeper.flash(BEEPER_FLASHES);
   display.clear();
 
   encoder.setButtonHeldEnabled(true);
@@ -128,7 +118,6 @@ void loop() {
 
   ClickEncoder::Button b = encoder.getButton();
   if (b == ClickEncoder::Released) {
-    beep();
     resetTime();
   }
 
@@ -136,7 +125,7 @@ void loop() {
 
   if (PrintBtn.wasPressed()) {
     // change printing state
-    beep();
+    beeper.beep();
   }
 
   // print();
