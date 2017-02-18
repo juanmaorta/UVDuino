@@ -17,15 +17,20 @@
 #define ENCODER_BTN      11
 #define ENCODER_STEPS_PER_NOTCH    1   // Change this depending on which encoder is used
 
-// define clock and digital input pins
+// define clock and digital input pins for display
 #define PIN_DISPLAY_CLK   4
 #define PIN_DISPLAY_DIO   3
 
 #define TIME_BUFFER 150 // milliseconds
+// print button params
+#define PRINT_BTN 8
+#define PULLUP true
+#define INVERT true
+#define DEBOUNCE_MS 50
 
 // initialize TM1637 Display objects
 SevenSegmentExtended display(PIN_DISPLAY_CLK, PIN_DISPLAY_DIO);
-
+Button PrintBtn(PRINT_BTN, PULLUP, INVERT, DEBOUNCE_MS);
 ClickEncoder encoder = ClickEncoder(ENCODER_PINA,ENCODER_PINB,ENCODER_BTN,ENCODER_STEPS_PER_NOTCH);
 
 // @TODO State
@@ -110,8 +115,8 @@ void loop() {
   }
 
 
-static int16_t last, value;
-    value += encoder.getValue();
+  static int16_t last, value;
+  value += encoder.getValue();
 
   if (value != last) {
 
@@ -128,7 +133,14 @@ static int16_t last, value;
     resetTime();
   }
 
-  print();
+  PrintBtn.read();
+
+  if (PrintBtn.wasPressed()) {
+    // change printing state
+    beep();
+  }
+
+  // print();
   /*
   if (b != ClickEncoder::Open) {
     Serial.print("Button: ");
