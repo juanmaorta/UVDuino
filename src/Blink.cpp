@@ -4,16 +4,19 @@
  * then off for one second, repeatedly.
  */
 
-#include <Encoder.h>
+#include <ClickEncoder.h>
 #include <Button.h>
 #include <SevenSegmentTM1637.h>
 #include <SevenSegmentExtended.h>
 
 #define LED_PIN 13
 #define BUZZER_PIN 12
-#define BUTTON_MODE_PIN 11
-#define ENCODER_CLK 5
-#define ENCODER_DT 6
+
+#define ENCODER_PINA     5
+#define ENCODER_PINB     6
+#define ENCODER_BTN      11
+#define ENCODER_STEPS_PER_NOTCH    1   // Change this depending on which encoder is used
+
 // define clock and digital input pins
 #define PIN_DISPLAY_CLK   4
 #define PIN_DISPLAY_DIO   3
@@ -21,26 +24,25 @@
 // initialize TM1637 Display objects
 SevenSegmentExtended display(PIN_DISPLAY_CLK, PIN_DISPLAY_DIO);
 
-Button button1(BUTTON_MODE_PIN); // Connect your button between pin 2 and GND
-Encoder myEnc(ENCODER_CLK, ENCODER_DT);
+ClickEncoder encoder = ClickEncoder(ENCODER_PINA,ENCODER_PINB,ENCODER_BTN,ENCODER_STEPS_PER_NOTCH);
 
-bool buzz = false;
+// @TODO State
 bool printing = false;
-long oldPosition  = -999;
-
 
 void setup()
 {
   // initialize LED digital pin as an output.
   pinMode(LED_PIN, OUTPUT);
   pinMode(BUZZER_PIN, OUTPUT);
-  button1.begin();
 
   display.begin();            // initializes the display
   display.setBacklight(50);  // set the brightness to 100 %
-  display.print("helo");      // display INIT on the display
+  display.print("HOLA");      // display INIT on the display
   delay(1000);                // wait 1000 ms
   display.clear();
+
+  encoder.setButtonHeldEnabled(true);
+  encoder.setDoubleClickEnabled(false);
 
   Serial.begin(9600);
   Serial.println("Basic Encoder Test:");
@@ -73,28 +75,50 @@ void blink() {
   digitalWrite(LED_PIN, LOW);
 }
 
-void loop()
-{
-  // digitalWrite(LED_PIN, HIGH);
-  // // wait for a second
-  // delay(50);
-  // // turn the LED off by making the voltage LOW
-  // // digitalWrite(6, LOW);
-  // digitalWrite(LED_PIN, LOW);
-  //  // wait for a second
-  // delay(500);
+volatile int lastTime = 0;
 
-  long newPosition = abs(myEnc.read());
-  if (newPosition != oldPosition) {
-    oldPosition = newPosition;
-    Serial.println(newPosition);
-    // display.print(newPosition);
-    display.printTime(newPosition, 0, true);
+/** @TODO must buffer (debounce) the display */
+void displayTime(int time) {
+  display.printTime(abs(time), 0, false);
+}
+
+void loop() {
+
+  //Call Service in loop becasue using timer interrupts may affect ESP8266 WIFI
+  //however call no more than 1 time per millisecond to reduce encoder bounce
+  static uint32_t lastService = 0;
+  if (lastService + 1000 < micros()) {
+    lastService = micros();
+    encoder.service();
   }
 
-  if (button1.pressed()) {
-    togglePrint();
-	}
 
-  print();
+static int16_t last, value;
+    value += encoder.getValue();
+
+  if (value != last) {
+    last = value;
+    Serial.print("Encoder Value: ");
+    Serial.println(value);
+    displayTime(value);
+
+  }
+
+  ClickEncoder::Button b = encoder.getButton();
+  if (b == ClickEncoder::Pressed) {
+    beep();
+  }
+  /*
+  if (b != ClickEncoder::Open) {
+    Serial.print("Button: ");
+    #define VERBOSECASE(label) case label: Serial.println(#label); break;
+    switch (b) {
+      VERBOSECASE(ClickEncoder::Pressed);
+      VERBOSECASE(ClickEncoder::Held)
+      VERBOSECASE(ClickEncoder::Released)
+      VERBOSECASE(ClickEncoder::Clicked)
+      VERBOSECASE(ClickEncoder::DoubleClicked)
+    }
+  }
+  */
 }
