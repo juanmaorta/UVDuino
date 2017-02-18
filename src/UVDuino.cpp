@@ -35,31 +35,20 @@ ClickEncoder encoder = ClickEncoder(ENCODER_PINA,ENCODER_PINB,ENCODER_BTN,ENCODE
 
 // @TODO State
 bool printing = false;
-
-void setup()
-{
-  // initialize LED digital pin as an output.
-  pinMode(LED_PIN, OUTPUT);
-  pinMode(BUZZER_PIN, OUTPUT);
-
-  display.begin();            // initializes the display
-  display.setBacklight(50);  // set the brightness to 100 %
-  display.print("HOLA");      // display INIT on the display
-  delay(1000);                // wait 1000 ms
-  display.clear();
-
-  encoder.setButtonHeldEnabled(true);
-  encoder.setDoubleClickEnabled(false);
-
-  Serial.begin(9600);
-  Serial.println("Basic Encoder Test:");
-}
+volatile int lastTime = 0;
+volatile int lastRead = 0;
 
 void beep() {
   digitalWrite(BUZZER_PIN, HIGH);
   delay(10);
   digitalWrite(BUZZER_PIN, LOW);
   display.blink();
+}
+
+void blink() {
+  digitalWrite(LED_PIN, HIGH);
+  delay(10);
+  digitalWrite(LED_PIN, LOW);
 }
 
 void togglePrint() {
@@ -74,15 +63,6 @@ void print() {
 
   digitalWrite(LED_PIN, LOW);
 }
-
-void blink() {
-  digitalWrite(LED_PIN, HIGH);
-  delay(10);
-  digitalWrite(LED_PIN, LOW);
-}
-
-volatile int lastTime = 0;
-volatile int lastRead = 0;
 
 void displayTime(int time, int lastValue) {
   int read = millis();
@@ -102,6 +82,25 @@ void resetTime() {
   lastTime = 0;
   lastRead = 0;
   display.printTime(0, 0, true);
+}
+
+void setup()
+{
+  // initialize LED digital pin as an output.
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+
+  display.begin();            // initializes the display
+  display.setBacklight(50);  // set the brightness to 100 %
+  display.print("HOLA");      // display INIT on the display
+  delay(1000);                // wait 1000 ms
+  display.clear();
+
+  encoder.setButtonHeldEnabled(true);
+  encoder.setDoubleClickEnabled(false);
+
+  Serial.begin(9600);
+  Serial.println("Basic Encoder Test:");
 }
 
 void loop() {
