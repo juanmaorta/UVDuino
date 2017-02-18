@@ -21,6 +21,8 @@
 #define PIN_DISPLAY_CLK   4
 #define PIN_DISPLAY_DIO   3
 
+#define TIME_BUFFER 150 // milliseconds
+
 // initialize TM1637 Display objects
 SevenSegmentExtended display(PIN_DISPLAY_CLK, PIN_DISPLAY_DIO);
 
@@ -75,10 +77,26 @@ void blink() {
 }
 
 volatile int lastTime = 0;
+volatile int lastRead = 0;
 
-/** @TODO must buffer (debounce) the display */
-void displayTime(int time) {
-  display.printTime(abs(time), 0, false);
+void displayTime(int time, int lastValue) {
+  int read = millis();
+  if (read - lastRead > TIME_BUFFER) {
+    if (time > lastValue) {
+      lastTime++;
+    } else {
+      lastTime--;
+    }
+
+    lastRead = read;
+  }
+  display.printTime(abs(lastTime), 0, false);
+}
+
+void resetTime() {
+  lastTime = 0;
+  lastRead = 0;
+  display.printTime(0, 0, true);
 }
 
 void loop() {
@@ -96,17 +114,18 @@ static int16_t last, value;
     value += encoder.getValue();
 
   if (value != last) {
-    last = value;
+
     Serial.print("Encoder Value: ");
     Serial.println(value);
-    displayTime(value);
+    displayTime(value, last);
+    last = value;
 
   }
 
   ClickEncoder::Button b = encoder.getButton();
   if (b == ClickEncoder::Released) {
     beep();
-    togglePrint();
+    resetTime();
   }
 
   print();
