@@ -2,6 +2,7 @@
 #include <Button.h>
 #include <SevenSegmentTM1637.h>
 #include <SevenSegmentExtended.h>
+#include <SevenSegmentFun.h>
 #include <Blinker.h>
 // states
 #include <State.h>
@@ -32,12 +33,15 @@
 #define BEEPER_FLASHES 2
 
 // initialize TM1637 Display objects
-SevenSegmentExtended display(PIN_DISPLAY_CLK, PIN_DISPLAY_DIO);
+SevenSegmentFun display(PIN_DISPLAY_CLK, PIN_DISPLAY_DIO);
+
 Button PrintBtn(PRINT_BTN, PULLUP, INVERT, DEBOUNCE_MS);
+Button EncoderBtn(ENCODER_BTN, PULLUP, INVERT, DEBOUNCE_MS);
 ClickEncoder encoder = ClickEncoder(ENCODER_PINA,ENCODER_PINB,ENCODER_BTN,ENCODER_STEPS_PER_NOTCH);
-Blinker beeper = Blinker(BUZZER_PIN, 10);
+Blinker beeper = Blinker(BUZZER_PIN, 100);
 
 int state = IDLE;
+int lightLevel = 4;
 volatile int lastTime = 0;
 volatile int lastRead = 0;
 
@@ -46,12 +50,16 @@ void togglePrint() {
 }
 
 void print() {
+  int dimmerLevel = 240 / (5 - lightLevel);
+
   if (state == PRINTING) {
-    digitalWrite(RELAY_PIN, HIGH);
+    analogWrite(DIMMER_PIN, dimmerLevel);
+    digitalWrite(RELAY_PIN, LOW);
     return;
   }
 
-  digitalWrite(RELAY_PIN, LOW);
+
+  digitalWrite(RELAY_PIN, HIGH);
 }
 
 void displayTime(int time, int lastValue) {
@@ -80,6 +88,7 @@ void setup()
 {
   // initialize LED digital pin as an output.
   pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, HIGH);
   // pinMode(BUZZER_PIN, OUTPUT);
 
   display.begin();            // initializes the display
@@ -89,11 +98,26 @@ void setup()
   beeper.flash(BEEPER_FLASHES);
   display.clear();
 
-  encoder.setButtonHeldEnabled(true);
-  encoder.setDoubleClickEnabled(false);
+  // encoder.setButtonHeldEnabled(true);
+  // encoder.setDoubleClickEnabled(false);
 
   Serial.begin(9600);
   Serial.println("Basic Encoder Test:");
+}
+
+void updateLevel () {
+  if (lightLevel < 4) {
+    lightLevel++;
+  } else {
+    lightLevel = 1;
+  }
+
+  display.printLevelVertical(lightLevel * 25);
+  delay(500);
+
+  // set status idle
+  Serial.println("lightLevel is now");
+  Serial.println(lightLevel);
 }
 
 void loop() {
@@ -115,13 +139,20 @@ void loop() {
     last = value;
   }
 
-  ClickEncoder::Button b = encoder.getButton();
-  if (b == ClickEncoder::Released) {
-    resetTime();
+  // ClickEncoder::Button b = encoder.getButton();
+  // if (b == ClickEncoder::Released) {
+  //   resetTime();
+  // }
+
+  EncoderBtn.read();
+  if (EncoderBtn.wasReleased()) {
+    // set status level
+    updateLevel();
   }
 
-  // dim the leds 1/2
-  analogWrite(DIMMER_PIN, 10);
+  if (EncoderBtn.pressedFor(1000)) {
+    resetTime();
+  }
 
   PrintBtn.read();
 
