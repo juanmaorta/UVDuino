@@ -3,46 +3,50 @@
 #include <SevenSegmentTM1637.h>
 #include <SevenSegmentExtended.h>
 #include <Blinker.h>
+// states
+#include <State.h>
 
-#define RELAY_PIN 13
-#define BUZZER_PIN 12
 
-#define ENCODER_PINA     5
-#define ENCODER_PINB     6
-#define ENCODER_BTN      11
+
+
+#define PIN_DISPLAY_DIO   3
+#define PIN_DISPLAY_CLK   4
+#define ENCODER_PINA      5
+#define ENCODER_PINB      6
+#define PRINT_BTN         8
+#define DIMMER_PIN        10 // PWM
+#define ENCODER_BTN       11
+#define BUZZER_PIN        12
+#define RELAY_PIN         13
+
+
+
 #define ENCODER_STEPS_PER_NOTCH    1   // Change this depending on which encoder is used
 
-// define clock and digital input pins for display
-#define PIN_DISPLAY_CLK   4
-#define PIN_DISPLAY_DIO   3
-
+// encoder buffer
 #define TIME_BUFFER 150 // milliseconds
 // print button params
-#define PRINT_BTN 8
 #define PULLUP true
 #define INVERT true
 #define DEBOUNCE_MS 50
-
 #define BEEPER_FLASHES 2
 
 // initialize TM1637 Display objects
 SevenSegmentExtended display(PIN_DISPLAY_CLK, PIN_DISPLAY_DIO);
 Button PrintBtn(PRINT_BTN, PULLUP, INVERT, DEBOUNCE_MS);
 ClickEncoder encoder = ClickEncoder(ENCODER_PINA,ENCODER_PINB,ENCODER_BTN,ENCODER_STEPS_PER_NOTCH);
+Blinker beeper = Blinker(BUZZER_PIN, 10);
 
-Blinker beeper = Blinker(BUZZER_PIN, 100);
-
-// @TODO State
-bool printing = false;
+int state = IDLE;
 volatile int lastTime = 0;
 volatile int lastRead = 0;
 
 void togglePrint() {
-  printing = !printing;
+   state = (state == IDLE) ? PRINTING : IDLE;
 }
 
 void print() {
-  if (printing) {
+  if (state == PRINTING) {
     digitalWrite(RELAY_PIN, HIGH);
     return;
   }
@@ -75,7 +79,6 @@ void resetTime() {
 void setup()
 {
   // initialize LED digital pin as an output.
-
   pinMode(RELAY_PIN, OUTPUT);
   // pinMode(BUZZER_PIN, OUTPUT);
 
@@ -108,12 +111,8 @@ void loop() {
   value += encoder.getValue();
 
   if (value != last) {
-
-    Serial.print("Encoder Value: ");
-    Serial.println(value);
     displayTime(value, last);
     last = value;
-
   }
 
   ClickEncoder::Button b = encoder.getButton();
@@ -125,10 +124,10 @@ void loop() {
 
   if (PrintBtn.wasPressed()) {
     // change printing state
-    beeper.beep();
+    togglePrint();
   }
 
-  // print();
+  print();
   /*
   if (b != ClickEncoder::Open) {
     Serial.print("Button: ");
