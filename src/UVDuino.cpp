@@ -7,9 +7,6 @@
 // states
 #include <State.h>
 
-
-
-
 #define PIN_DISPLAY_DIO   3
 #define PIN_DISPLAY_CLK   4
 #define ENCODER_PINA      5
@@ -19,8 +16,6 @@
 #define ENCODER_BTN       11
 #define BUZZER_PIN        12
 #define RELAY_PIN         13
-
-
 
 #define ENCODER_STEPS_PER_NOTCH    1   // Change this depending on which encoder is used
 
@@ -39,25 +34,20 @@ Button PrintBtn(PRINT_BTN, PULLUP, INVERT, DEBOUNCE_MS);
 Button EncoderBtn(ENCODER_BTN, PULLUP, INVERT, DEBOUNCE_MS);
 ClickEncoder encoder = ClickEncoder(ENCODER_PINA,ENCODER_PINB,ENCODER_BTN,ENCODER_STEPS_PER_NOTCH);
 Blinker beeper = Blinker(BUZZER_PIN, 100);
+State state;
 
-int state = IDLE;
 int lightLevel = 4;
 volatile int lastTime = 0;
 volatile int lastRead = 0;
 
-void togglePrint() {
-   state = (state == IDLE) ? PRINTING : IDLE;
-}
-
 void print() {
   int dimmerLevel = 240 / (5 - lightLevel);
 
-  if (state == PRINTING) {
+  if (state.isPrinting()) {
     analogWrite(DIMMER_PIN, dimmerLevel);
     digitalWrite(RELAY_PIN, LOW);
     return;
   }
-
 
   digitalWrite(RELAY_PIN, HIGH);
 }
@@ -157,8 +147,7 @@ void loop() {
   PrintBtn.read();
 
   if (PrintBtn.wasPressed()) {
-    // change printing state
-    togglePrint();
+    state.togglePrint();
   }
 
   print();
