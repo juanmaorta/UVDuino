@@ -120,6 +120,9 @@ void loop() {
     resetTime();
   }
 
+  // dim the leds 1/2
+  analogWrite(DIMMER_PIN, 10);
+
   PrintBtn.read();
 
   if (PrintBtn.wasPressed()) {
