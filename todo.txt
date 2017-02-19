@@ -1,0 +1,8 @@
+- function to display time in minutes/seconds from milliseconds
+- function to update time limit from units (minutes/seconds) to milliseconds
+- countdown timer (variables by reference in C++?)
+
+void addOne(int &y) // y is a reference variable
+{
+    y = y + 1;
+}
