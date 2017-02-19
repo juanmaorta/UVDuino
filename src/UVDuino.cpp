@@ -53,6 +53,8 @@ void print() {
 }
 
 void displayTime(int time, int lastValue) {
+  if (state.isPrinting()) return;
+
   int read = millis();
   if (read - lastRead > TIME_BUFFER) {
     if (time > lastValue) {
@@ -96,6 +98,8 @@ void setup()
 }
 
 void updateLevel () {
+  if (state.isPrinting()) return;
+
   if (lightLevel < 4) {
     lightLevel++;
   } else {
@@ -103,11 +107,9 @@ void updateLevel () {
   }
 
   display.printLevelVertical(lightLevel * 25);
-  delay(500);
-
-  // set status idle
-  Serial.println("lightLevel is now");
-  Serial.println(lightLevel);
+  delay(1000);
+  display.printTime(abs(lastTime), 0, false);
+  display.blink();
 }
 
 void loop() {
