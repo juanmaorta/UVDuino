@@ -4,6 +4,7 @@
 #include <SevenSegmentExtended.h>
 #include <SevenSegmentFun.h>
 #include <Blinker.h>
+#include <CountUpDownTimer.h>
 // states
 #include <State.h>
 
@@ -29,6 +30,7 @@
 
 // initialize TM1637 Display objects
 SevenSegmentFun display(PIN_DISPLAY_CLK, PIN_DISPLAY_DIO);
+CountUpDownTimer T(DOWN);
 
 Button PrintBtn(PRINT_BTN, PULLUP, INVERT, DEBOUNCE_MS);
 Button EncoderBtn(ENCODER_BTN, PULLUP, INVERT, DEBOUNCE_MS);
@@ -42,11 +44,21 @@ volatile int lastRead = 0;
 
 void print() {
   int dimmerLevel = 240 / (5 - lightLevel);
+  digitalWrite(RELAY_PIN, LOW);
 
   if (state.isPrinting()) {
     analogWrite(DIMMER_PIN, dimmerLevel);
-    digitalWrite(RELAY_PIN, LOW);
-    return;
+    T.Timer();
+    if (!T.TimeCheck()) {
+      if (T.TimeHasChanged()) {
+        display.printTime(T.ShowSeconds(), 0, false);
+      }
+
+      return;
+    } else {
+      display.printTime(0, 0, false);
+      state.togglePrint();
+    }
   }
 
   digitalWrite(RELAY_PIN, HIGH);
@@ -149,6 +161,8 @@ void loop() {
   PrintBtn.read();
 
   if (PrintBtn.wasPressed()) {
+    T.SetTimer(lastTime); // seconds
+    T.StartTimer();
     state.togglePrint();
   }
 
