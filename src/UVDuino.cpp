@@ -60,7 +60,7 @@ void print() {
       if (T.TimeHasChanged()) {
         if (useMinutes) {
           if (T.ShowMinutes() == 0 && T.ShowSeconds() < 10 ) {
-            beeper.beep();
+            beeper.bleep();
           }
           display.printTime(T.ShowMinutes(), T.ShowSeconds(), false);
         } else {
