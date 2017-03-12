@@ -102,6 +102,8 @@ void setup()
   beeper.flash(BEEPER_FLASHES);
   display.clear();
 
+  display.printTime(0, 0, true);
+
   // encoder.setButtonHeldEnabled(true);
   // encoder.setDoubleClickEnabled(false);
 
@@ -109,6 +111,7 @@ void setup()
   Serial.println("Basic Encoder Test:");
 }
 
+// updates LED level through PWM
 void updateLevel () {
   if (state.isPrinting()) return;
 
