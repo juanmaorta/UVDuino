@@ -23,13 +23,12 @@ void Blinker::flash(int flashes)
   }
 }
 
-void Blinker::longFlash()
+void Blinker::longFlash(int flashes)
 {
-  Blinker::flash(3);
-
-  digitalWrite(_pin, HIGH);
-  delay(_ms * 4);
-  digitalWrite(_pin, LOW);
-
-  Blinker::flash(2);
+  for (int i = 0; i < flashes; i++) {
+    digitalWrite(_pin, HIGH);
+    delay(_ms * 6);
+    digitalWrite(_pin, LOW);
+    delay(_ms * 4);
+  }
 }

@@ -45,6 +45,7 @@ volatile int lastRead = 0;
 
 void print() {
   if (state.isDimmerSetup()) return;
+  if (lastTime == 0) return;
 
   /** @TODO Keep this here until real proof is done */
   // int dimmerLevel = 240 / (5 - lightLevel);
@@ -62,10 +63,10 @@ void print() {
       return;
     } else {
       display.printTime(0, 0, false);
-      beeper.longFlash();
-      delay(500);
-      display.printTime(abs(lastTime), 0, false);
       state.togglePrint();
+      // beeper.longFlash(3);
+      // delay(500);
+      display.printTime(abs(lastTime), 0, false);
     }
   }
 
@@ -186,6 +187,11 @@ void loop() {
   PrintBtn.read();
 
   if (PrintBtn.wasPressed()) {
+    if (lastTime == 0) {
+      beeper.beep();
+      display.blink();
+      return;
+    }
     T.SetTimer(lastTime); // seconds
     T.StartTimer();
     state.togglePrint();
