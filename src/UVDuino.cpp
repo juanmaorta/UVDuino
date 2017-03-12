@@ -27,6 +27,7 @@
 #define INVERT true
 #define DEBOUNCE_MS 50
 #define BEEPER_FLASHES 2
+#define HOLD_RELEASE_DELAY 1000
 
 // initialize TM1637 Display objects
 SevenSegmentFun display(PIN_DISPLAY_CLK, PIN_DISPLAY_DIO);
@@ -43,6 +44,8 @@ volatile int lastTime = 0;
 volatile int lastRead = 0;
 
 void print() {
+  if (state.isDimmerSetup()) return;
+
   int dimmerLevel = 240 / (5 - lightLevel);
   digitalWrite(RELAY_PIN, LOW);
 
@@ -127,13 +130,11 @@ void updateLevel() {
   }
 
   display.printLevelVertical(lightLevel * 25);
-  // delay(1000);
-  // display.printTime(abs(lastTime), 0, false);
-  // display.blink();
 }
 
 void showCurrentTime() {
   display.printTime(abs(lastTime), 0, false);
+  // delay(1000);
   beeper.beep();
 }
 
@@ -167,12 +168,12 @@ void loop() {
     updateLevel();
   }
 
-  if (EncoderBtn.releasedFor(1000) && state.isDimmerSetup()) {
-    state.toggleDimmer();
+  if (EncoderBtn.releasedFor(HOLD_RELEASE_DELAY) && state.isDimmerSetup()) {
     showCurrentTime();
+    state.toggleDimmer();
   }
 
-  if (EncoderBtn.pressedFor(1000)) {
+  if (EncoderBtn.pressedFor(HOLD_RELEASE_DELAY)) {
     resetTime();
   }
 
