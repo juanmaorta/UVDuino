@@ -7,6 +7,7 @@ class Blinker
   public:
     Blinker(uint8_t pin, uint8_t ms);
     void beep(void);
+    void bleep();
     void flash(int flashes);
     void longFlash(int flashes);
 

@@ -15,6 +15,13 @@ void Blinker::beep(void)
   digitalWrite(_pin, LOW);
 }
 
+void Blinker::bleep(void)
+{
+  digitalWrite(_pin, HIGH);
+  delay(_ms / 4);
+  digitalWrite(_pin, LOW);
+}
+
 void Blinker::flash(int flashes)
 {
   for (int i = 0; i < flashes; i++) {
