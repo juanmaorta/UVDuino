@@ -46,11 +46,13 @@ volatile int lastRead = 0;
 void print() {
   if (state.isDimmerSetup()) return;
 
-  int dimmerLevel = 240 / (5 - lightLevel);
+  /** @TODO Keep this here until real proof is done */
+  // int dimmerLevel = 240 / (5 - lightLevel);
   digitalWrite(RELAY_PIN, LOW);
 
   if (state.isPrinting()) {
-    analogWrite(DIMMER_PIN, dimmerLevel);
+    /** @TODO Keep this here until real proof is done */
+    // analogWrite(DIMMER_PIN, dimmerLevel);
     T.Timer();
     if (!T.TimeCheck()) {
       if (T.TimeHasChanged()) {
@@ -93,10 +95,9 @@ void resetTime() {
 
 void setup()
 {
-  // initialize LED digital pin as an output.
+  // initialize RELAY_PIN digital pin as an output.
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, HIGH);
-  // pinMode(BUZZER_PIN, OUTPUT);
 
   display.begin();            // initializes the display
   display.setBacklight(50);  // set the brightness to 100 %
@@ -116,7 +117,6 @@ void setup()
 
 // updates LED level through PWM
 void updateLevel() {
-  Serial.println(state.get());
   if (state.isPrinting()) return;
 
   if (!state.isDimmerSetup()) {
@@ -130,6 +130,9 @@ void updateLevel() {
   }
 
   display.printLevelVertical(lightLevel * 25);
+
+  int dimmerLevel = 240 / (5 - lightLevel);
+  analogWrite(DIMMER_PIN, dimmerLevel);
 }
 
 void showCurrentTime() {
