@@ -16,7 +16,7 @@
 #define DIMMER_PIN        10 // PWM
 #define ENCODER_BTN       6
 #define BUZZER_PIN        12
-#define RELAY_PIN         13
+#define RELAY_PIN         9
 
 #define ENCODER_STEPS_PER_NOTCH    1   // Change this depending on which encoder is used
 
