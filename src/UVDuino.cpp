@@ -42,6 +42,7 @@ State state;
 int lightLevel = 4;
 volatile int lastTime = 0;
 volatile int lastRead = 0;
+boolean useMinutes = true;
 
 void print() {
   if (state.isDimmerSetup()) return;
@@ -57,14 +58,21 @@ void print() {
     T.Timer();
     if (!T.TimeCheck()) {
       if (T.TimeHasChanged()) {
-        display.printTime(T.ShowSeconds(), 0, false);
+        if (useMinutes) {
+          if (T.ShowMinutes() == 0 && T.ShowSeconds() < 10 ) {
+            beeper.beep();
+          }
+          display.printTime(T.ShowMinutes(), T.ShowSeconds(), false);
+        } else {
+          display.printTime(T.ShowSeconds(), 0, false);
+        }
       }
 
       return;
     } else {
       display.printTime(0, 0, false);
       state.togglePrint();
-      // beeper.longFlash(3);
+      beeper.longFlash(1);
       // delay(500);
       display.printTime(abs(lastTime), 0, false);
     }
@@ -192,7 +200,7 @@ void loop() {
       display.blink();
       return;
     }
-    T.SetTimer(lastTime); // seconds
+    T.SetTimer(useMinutes ? lastTime * 60 : lastTime); // seconds
     T.StartTimer();
     state.togglePrint();
   }
