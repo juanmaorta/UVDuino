@@ -20,7 +20,17 @@ void State::togglePrint()
   _state = (_state == IDLE) ? PRINTING : IDLE;
 }
 
+void State::toggleDimmer()
+{
+  _state = (_state == IDLE) ? SETUP_DIMMER : IDLE;
+}
+
 bool State::isPrinting()
 {
   return _state == PRINTING;
+}
+
+bool State::isDimmerSetup()
+{
+  return _state == SETUP_DIMMER;
 }
