@@ -112,8 +112,13 @@ void setup()
 }
 
 // updates LED level through PWM
-void updateLevel () {
+void updateLevel() {
+  Serial.println(state.get());
   if (state.isPrinting()) return;
+
+  if (!state.isDimmerSetup()) {
+    state.toggleDimmer();
+  }
 
   if (lightLevel < 4) {
     lightLevel++;
@@ -122,9 +127,14 @@ void updateLevel () {
   }
 
   display.printLevelVertical(lightLevel * 25);
-  delay(1000);
+  // delay(1000);
+  // display.printTime(abs(lastTime), 0, false);
+  // display.blink();
+}
+
+void showCurrentTime() {
   display.printTime(abs(lastTime), 0, false);
-  display.blink();
+  beeper.beep();
 }
 
 void loop() {
@@ -152,9 +162,14 @@ void loop() {
   // }
 
   EncoderBtn.read();
-  if (EncoderBtn.wasReleased()) {
+  if (EncoderBtn.wasPressed()) {
     // set status level
     updateLevel();
+  }
+
+  if (EncoderBtn.releasedFor(1000) && state.isDimmerSetup()) {
+    state.toggleDimmer();
+    showCurrentTime();
   }
 
   if (EncoderBtn.pressedFor(1000)) {
