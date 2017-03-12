@@ -62,6 +62,9 @@ void print() {
       return;
     } else {
       display.printTime(0, 0, false);
+      beeper.longFlash();
+      delay(500);
+      display.printTime(abs(lastTime), 0, false);
       state.togglePrint();
     }
   }

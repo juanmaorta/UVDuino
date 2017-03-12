@@ -22,3 +22,14 @@ void Blinker::flash(int flashes)
     delay(_ms);
   }
 }
+
+void Blinker::longFlash()
+{
+  Blinker::flash(3);
+
+  digitalWrite(_pin, HIGH);
+  delay(_ms * 4);
+  digitalWrite(_pin, LOW);
+
+  Blinker::flash(2);
+}
