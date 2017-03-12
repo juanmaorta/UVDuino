@@ -11,10 +11,10 @@
 #define PIN_DISPLAY_DIO   3
 #define PIN_DISPLAY_CLK   4
 #define ENCODER_PINA      5
-#define ENCODER_PINB      6
+#define ENCODER_PINB      11
 #define PRINT_BTN         8
 #define DIMMER_PIN        10 // PWM
-#define ENCODER_BTN       11
+#define ENCODER_BTN       6
 #define BUZZER_PIN        12
 #define RELAY_PIN         13
 
