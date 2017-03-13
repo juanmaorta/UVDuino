@@ -17,6 +17,7 @@
 #define ENCODER_BTN       6
 #define BUZZER_PIN        12
 #define RELAY_PIN         9
+#define TIME_INCREASE     0.5 // mins
 
 #define ENCODER_STEPS_PER_NOTCH    1   // Change this depending on which encoder is used
 
@@ -40,9 +41,16 @@ Blinker beeper = Blinker(BUZZER_PIN, 100);
 State state;
 
 int lightLevel = 4;
-volatile int lastTime = 0;
+volatile float lastTime = 0;
 volatile int lastRead = 0;
 boolean useMinutes = true;
+
+int ExtractSeconds(float Value) {
+  int IntegerPart = (int)(Value);
+  int Seconds = (Value - IntegerPart) * 60;
+
+  return Seconds;
+}
 
 void print() {
   if (state.isDimmerSetup()) return;
@@ -74,7 +82,8 @@ void print() {
       state.togglePrint();
       beeper.longFlash(1);
       // delay(500);
-      display.printTime(abs(lastTime), 0, false);
+      int secs = (useMinutes) ? abs(ExtractSeconds(lastTime)) : 0;
+      display.printTime(abs(lastTime), secs, false);
     }
   }
 
@@ -87,14 +96,14 @@ void displayTime(int time, int lastValue) {
   int read = millis();
   if (read - lastRead > TIME_BUFFER) {
     if (time > lastValue) {
-      lastTime++;
+      lastTime += (useMinutes) ? TIME_INCREASE : 1;
     } else {
-      lastTime--;
+      lastTime -= (useMinutes) ? TIME_INCREASE : 1;
     }
 
     lastRead = read;
   }
-  display.printTime(abs(lastTime), 0, false);
+  display.printTime(abs(lastTime), abs(ExtractSeconds(lastTime)), false);
 }
 
 void resetTime() {
@@ -148,7 +157,8 @@ void updateLevel() {
 }
 
 void showCurrentTime() {
-  display.printTime(abs(lastTime), 0, false);
+  int secs = (useMinutes) ? abs(ExtractSeconds(lastTime)) : 0;
+  display.printTime(abs(lastTime), secs, false);
   // delay(1000);
   beeper.beep();
 }
