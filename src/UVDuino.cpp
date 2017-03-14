@@ -5,6 +5,7 @@
 #include <SevenSegmentFun.h>
 #include <Blinker.h>
 #include <CountUpDownTimer.h>
+#include <EEPROM.h>
 // states
 #include <State.h>
 
@@ -29,6 +30,7 @@
 #define DEBOUNCE_MS 50
 #define BEEPER_FLASHES 2
 #define HOLD_RELEASE_DELAY 1000
+#define LEVEL_MEM_POSITION 0
 
 // initialize TM1637 Display objects
 SevenSegmentFun display(PIN_DISPLAY_CLK, PIN_DISPLAY_DIO);
@@ -129,6 +131,12 @@ void setup()
 
   display.printTime(0, 0, true);
 
+  // read values from EEPROM
+  lightLevel = EEPROM.read(LEVEL_MEM_POSITION);
+  if (lightLevel == 255) {
+    lightLevel = 4;
+  }
+
   // encoder.setButtonHeldEnabled(true);
   // encoder.setDoubleClickEnabled(false);
 
@@ -149,6 +157,8 @@ void updateLevel() {
   } else {
     lightLevel = 1;
   }
+
+  EEPROM.write(LEVEL_MEM_POSITION, lightLevel);
 
   display.printLevelVertical(lightLevel * 25);
 
