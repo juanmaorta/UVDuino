@@ -31,6 +31,7 @@
 #define BEEPER_FLASHES 2
 #define HOLD_RELEASE_DELAY 1000
 #define LEVEL_MEM_POSITION 0
+#define TIME_MEM_POSITION 1
 
 // initialize TM1637 Display objects
 SevenSegmentFun display(PIN_DISPLAY_CLK, PIN_DISPLAY_DIO);
@@ -105,6 +106,7 @@ void displayTime(int time, int lastValue) {
 
     lastRead = read;
   }
+  EEPROM.put(TIME_MEM_POSITION, lastTime);
   display.printTime(abs(lastTime), abs(ExtractSeconds(lastTime)), false);
 }
 
@@ -118,6 +120,14 @@ void resetTime() {
 
 void setup()
 {
+  // read values from EEPROM
+  lightLevel = EEPROM.read(LEVEL_MEM_POSITION);
+  if (lightLevel == 255) {
+    lightLevel = 4;
+  }
+
+  EEPROM.get(TIME_MEM_POSITION, lastTime);
+
   // initialize RELAY_PIN digital pin as an output.
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, HIGH);
@@ -129,13 +139,9 @@ void setup()
   beeper.flash(BEEPER_FLASHES);
   display.clear();
 
-  display.printTime(0, 0, true);
+  display.printTime(abs(lastTime), abs(ExtractSeconds(lastTime)), true);
 
-  // read values from EEPROM
-  lightLevel = EEPROM.read(LEVEL_MEM_POSITION);
-  if (lightLevel == 255) {
-    lightLevel = 4;
-  }
+
 
   // encoder.setButtonHeldEnabled(true);
   // encoder.setDoubleClickEnabled(false);
